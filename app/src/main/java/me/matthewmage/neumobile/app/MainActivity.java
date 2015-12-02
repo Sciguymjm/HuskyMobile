@@ -30,6 +30,7 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
@@ -155,11 +156,11 @@ public class MainActivity extends ActionBarActivity {
                     try {
                         Config.NU_TOKEN = mainObject.getString("access_token");
                         Config.REFRESH_TOKEN = mainObject.getString("refresh_token");
-                        // SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-                        // SharedPreferences.Editor editor = sharedPref.edit();
-                        // editor.putString(tokenPref, mainObject.getString("access_token"));
-                        // editor.putString(refreshPref, mainObject.getString("refresh_token"));
-                        // editor.commit();
+                        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putString(tokenPref, mainObject.getString("access_token"));
+                        editor.putString(refreshPref, mainObject.getString("refresh_token"));
+                        editor.apply();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -317,23 +318,26 @@ public class MainActivity extends ActionBarActivity {
                     }
 
                     // SCHEDULE //
-                    int currentDiff = -1;
-                    Date nextClass = new Date();
+                    TextView schedule = (TextView) findViewById(R.id.schedule);
+                    StringBuilder now = new StringBuilder();
+                    StringBuilder later = new StringBuilder();
                     try {
                         JSONArray arr = main.getJSONArray("courses");
-                        TextView schedule = (TextView) findViewById(R.id.schedule);
+                        long t = Calendar.getInstance().getTimeInMillis();
+                        Date today = new Date(t);
+
                         schedule.setText("");
                         for (int i = 0; i < arr.length(); i++) {
+                            boolean n = false; // if it's this semester
                             JSONObject c = arr.getJSONObject(i);
                             String id = c.getString("id");
                             String title = c.getString("title");
                             String subtitle = c.getString("subtitle");
                             String instr = c.getString("instr");
                             JSONArray meetings = c.getJSONArray("mtngs");
-
                             StringBuilder meeting = new StringBuilder();
-
                             for (int j = 0; j < meetings.length(); j++) {
+
                                 JSONObject m = meetings.getJSONObject(j);
                                 String type = m.getString("mtngtyp");
                                 String st = m.getString("st");
@@ -341,9 +345,14 @@ public class MainActivity extends ActionBarActivity {
                                 String start_string = "";
                                 String end_string = "";
                                 if ((st != "null") && (ed != "null")) {
+
+
                                     DateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
                                     Date start = df.parse(st);
                                     Date end = df.parse(ed);
+                                    if (start.before(today) && end.after(today))
+                                        n = true;
+
                                     SimpleDateFormat format = new SimpleDateFormat("MMM dd yyyy");
                                     start_string = format.format(start);
                                     end_string = format.format(end);
@@ -368,14 +377,22 @@ public class MainActivity extends ActionBarActivity {
                                 } else {
                                     meeting.append(String.format("Type: %s\nDates: %s - %s\n%s - %s\n\n", type, start_string, end_string, start_time_string, end_time_string));
                                 }
+
                             }
-                            schedule.setText(schedule.getText() + String.format("%s\n%s\n%s\n%s\n%s\n\n", id, title, subtitle, instr, meeting.toString()));
+                            String str = String.format("%s\n%s/%s\n%s\n\nMeetings:\n%s\n", subtitle, title, id, instr, meeting.toString());
+                            if (n) {
+                                now.append(str);
+                            } else {
+                                later.append(str);
+                            }
 
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     } catch (ParseException e) {
                         e.printStackTrace();
+                    } finally {
+                        schedule.setText("ACTIVE CLASSES:\n\n" + now.toString() + "\n\n\nNOT CURRENTLY ACTIVE:\n\n" + later.toString());
                     }
                     // ADVISOR FORMATTING //
                     TextView advisors = (TextView) findViewById(R.id.advisors);
@@ -440,7 +457,7 @@ public class MainActivity extends ActionBarActivity {
         H, L, M, P
     }
 
-    private class RetrieveTokens extends AsyncTask<String, Void, String> {
+    public class RetrieveTokens extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String[] code) {
@@ -464,13 +481,18 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(String code) {
             if (code == null) {
-                return;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        new RefreshTokens().execute();
+                    }
+                });
             }
             storeTokens(code);
         }
     }
 
-    private class RefreshTokens extends AsyncTask<String, Void, String> {
+    public class RefreshTokens extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String[] code) {
@@ -495,13 +517,13 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(String code) {
             if (code == null) {
-                return;
+                showLogin();
             }
             storeTokens(code);
         }
     }
 
-    private class RetrieveMyNEU extends AsyncTask<String, Void, String> {
+    public class RetrieveMyNEU extends AsyncTask<String, Void, String> {
 
 
         @Override
@@ -509,7 +531,6 @@ public class MainActivity extends ActionBarActivity {
 
 
             String uri = Config.SERVER_HOST + Config.NU_API_MYNEUDATA_URL;
-            log(uri);
             URL url = null;
             try {
                 url = new URL(uri);
@@ -526,7 +547,7 @@ public class MainActivity extends ActionBarActivity {
                 con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
                 con.setRequestProperty("Content-Type", "application/json; charset=utf-8");
                 con.setRequestProperty("Authorization", "Bearer " + Config.NU_TOKEN);
-
+                log("Sending request to: " + uri + " with data: " + con.getRequestProperties().toString());
                 final String responseString = con.getResponseMessage();
                 final int responseCode = con.getResponseCode();
                 log("NEU Response code: " + responseCode);
@@ -602,7 +623,7 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private class RetrieveMyNEUConfig extends AsyncTask<String, Void, String> {
+    public class RetrieveMyNEUConfig extends AsyncTask<String, Void, String> {
 
 
         @Override
@@ -681,12 +702,6 @@ public class MainActivity extends ActionBarActivity {
             }
             try {
                 Config.NU_API_MYNEUDATA_URL = new JSONObject(code).getString("NU_API_MYNEUDATA_URL") + '/' + Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        new RetrieveMyNEU().execute();
-                    }
-                });
             } catch (JSONException e) {
                 e.printStackTrace();
             } finally {
