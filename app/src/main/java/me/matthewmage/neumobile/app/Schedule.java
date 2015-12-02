@@ -57,7 +57,6 @@ public class Schedule extends AppCompatActivity {
                             String end_time_string = t_format.format(end_time);
 
 
-
                         }
                     }
                 } catch (JSONException e) {

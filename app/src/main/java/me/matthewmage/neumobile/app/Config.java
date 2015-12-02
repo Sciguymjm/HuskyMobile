@@ -6,7 +6,6 @@ import org.json.JSONObject;
  * Created by Matt on 11/19/2015.
  */
 public class Config {
-    public String code;
     public static String NU_TOKEN = "";
     public static String REFRESH_TOKEN = "";
     public static String SERVER_HOST = "https://prod-web.neu.edu/wasapp/";
@@ -24,4 +23,5 @@ public class Config {
     public static String NU_BUILDINGS_DATA_URL = "mob2/open/buildings";
     public static String NU_NEARME_DATA_URL = "mob2/open/nearmedata";
     public static JSONObject data;
+    public String code;
 }

@@ -37,12 +37,14 @@ import java.util.regex.Pattern;
 
 
 public class MainActivity extends ActionBarActivity {
+    private static final String USER_AGENT = "Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
     private final Config config = new Config();
     private final String tokenPref = "NU_TOKEN";
     private final String refreshPref = "REFRESH_TOKEN";
 
-    private enum balanceType {
-        H, L, M, P
+    private static void log(String msg) {
+        String tag = "NEU";
+        Log.i(tag, msg);
     }
 
     @Override
@@ -141,351 +143,6 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private static final String USER_AGENT = "Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
-
-    private class RetrieveTokens extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String[] code) {
-            JSONObject parent = new JSONObject();
-            try {
-                parent.put("code", code[0]);
-                parent.put("client", Config.NU_API_CLIENT_NAME);
-                parent.put("scope", Config.NU_API_SCOPE);
-                parent.put("redirect_uri", Config.NU_API_REDIRECT_URI);
-                parent.put("grant_type", "authorization_code");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-
-            String uri = Config.SERVER_HOST + Config.NU_API_TOKEN_URI2;
-            log(uri);
-            return makeRequest(uri, parent);
-        }
-
-        @Override
-        protected void onPostExecute(String code) {
-            if (code == null) {
-                return;
-            }
-            storeTokens(code);
-        }
-    }
-
-    private class RefreshTokens extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String[] code) {
-            log("Refreshing Tokens....");
-            JSONObject parent = new JSONObject();
-            try {
-                parent.put("refresh_token", Config.REFRESH_TOKEN);
-                parent.put("client", Config.NU_API_CLIENT_NAME);
-                parent.put("scope", Config.NU_API_SCOPE);
-                parent.put("grant_type", "refresh_token");
-            } catch (JSONException ignored) {
-
-            }
-
-
-            String uri = Config.SERVER_HOST + Config.NU_API_TOKEN_URI2;
-            log(uri);
-            return makeRequest(uri, parent);
-
-        }
-
-        @Override
-        protected void onPostExecute(String code) {
-            if (code == null) {
-                return;
-            }
-            storeTokens(code);
-        }
-    }
-
-    private class RetrieveMyNEU extends AsyncTask<String, Void, String> {
-
-
-        @Override
-        protected String doInBackground(String[] code) {
-
-
-            String uri = Config.SERVER_HOST + Config.NU_API_MYNEUDATA_URL;
-            log(uri);
-            URL url = null;
-            try {
-                url = new URL(uri);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-            try {
-                HttpsURLConnection con = (HttpsURLConnection) ((url != null) ? url.openConnection() : null);
-
-                //add request header
-                assert con != null;
-                con.setRequestMethod("GET");
-                con.setRequestProperty("User-Agent", USER_AGENT);
-                con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-                con.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-                con.setRequestProperty("Authorization", "Bearer " + Config.NU_TOKEN);
-
-                final String responseString = con.getResponseMessage();
-                final int responseCode = con.getResponseCode();
-                log("NEU Response code: " + responseCode);
-                if (responseCode > 200) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), "Retrieve ERROR" + responseCode + ": " + responseString, Toast.LENGTH_LONG).show();
-                            new RefreshTokens().execute();
-                        }
-                    });
-                    return null;
-
-                }
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(con.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-                return response.toString();
-            } catch (FileNotFoundException e) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // new RefreshTokens().execute();
-                    }
-                });
-                return null;
-            } catch (ProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String code) {
-            if (code == null) {
-                return;
-            }
-            try {
-                parseData(code);
-//                final String info = code;
-//                final JSONObject mainObject = new JSONObject(code);
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        StringBuilder s = new StringBuilder();
-//                        TextView text = (TextView) findViewById(R.id.name);
-//                        Iterator<?> keys = mainObject.keys();
-//                        while (keys.hasNext())
-//                        {
-//                            String key = (String) keys.next();
-//                            try {
-//                                if ( mainObject.get(key) instanceof JSONObject ) {
-//                                    s.append(key + ": " + mainObject.get(key).toString() + "\n\n");
-//                                }
-//                            } catch (JSONException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                        text.setText(info);
-//                    }
-//                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private class RetrieveMyNEUConfig extends AsyncTask<String, Void, String> {
-
-
-        @Override
-        protected String doInBackground(String[] code) {
-
-            String uuid = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-            String uri = Config.SERVER_HOST + Config.MYNEU_CONFIG_URL +
-                    "?myConfigVersion=0" +
-                    "&appName=myneu" +
-                    "&appversion=v0.8.907a" +
-                    "&deviceId=" + uuid;
-            log(uri);
-            URL url = null;
-            try {
-                url = new URL(uri);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-            try {
-                HttpsURLConnection con = (HttpsURLConnection) ((url != null) ? url.openConnection() : null);
-
-                //add request header
-                assert con != null;
-                con.setRequestMethod("GET");
-                con.setRequestProperty("User-Agent", USER_AGENT);
-                con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-                con.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-                con.setRequestProperty("Authorization", "Bearer " + Config.NU_TOKEN);
-
-                final String responseString = con.getResponseMessage();
-                final int responseCode = con.getResponseCode();
-                log("NEU Config Response code: " + responseCode);
-                if (responseCode > 200) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), "Retrieve ERROR" + responseCode + ": " + responseString, Toast.LENGTH_LONG).show();
-                            // new RefreshTokens().execute();
-                        }
-                    });
-                    return null;
-
-                }
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(con.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-                return response.toString();
-            } catch (FileNotFoundException e) {
-                log("ERROR GETTING NEU CONFIG");
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // new RefreshTokens().execute();
-                    }
-                });
-                return null;
-            } catch (ProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String code) {
-            if (code == null) {
-                return;
-            }
-            try {
-                Config.NU_API_MYNEUDATA_URL = new JSONObject(code).getString("NU_API_MYNEUDATA_URL") + '/' + Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        new RetrieveMyNEU().execute();
-                    }
-                });
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } finally {
-                if (Config.NU_TOKEN.isEmpty() || Config.REFRESH_TOKEN.isEmpty()) {
-                    showLogin();
-                } else {
-                    new RetrieveMyNEU().execute();
-                }
-            }
-        }
-    }
-
-    private class RetrieveClassInfo extends AsyncTask<String, Void, String> {
-
-
-        @Override
-        protected String doInBackground(String[] code) {
-
-            String uri = "http://coursepro.io/listSections";
-            log(uri);
-            URL url = null;
-            try {
-                url = new URL(uri);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-            try {
-                HttpURLConnection con = (HttpURLConnection) ((url != null) ? url.openConnection() : null);
-
-                //add request header
-                con.setRequestMethod("GET");
-                con.setRequestProperty("User-Agent", USER_AGENT);
-                con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-                con.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-
-                final String responseString = con.getResponseMessage();
-                final int responseCode = con.getResponseCode();
-                log("CoursePro Response code: " + responseCode);
-                if (responseCode > 200) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), "CoursePro ERROR" + responseCode + ": " + responseString, Toast.LENGTH_LONG).show();
-                            // new RefreshTokens().execute();
-                        }
-                    });
-                    return null;
-
-                }
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(con.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-                return response.toString();
-            } catch (FileNotFoundException e) {
-                log("ERROR GETTING NEU CONFIG");
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // new RefreshTokens().execute();
-                    }
-                });
-                return null;
-            } catch (ProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String code) {
-            if (code == null) {
-                return;
-            }
-            try {
-                Config.NU_API_MYNEUDATA_URL = new JSONObject(code).getString("NU_API_MYNEUDATA_URL") + '/' + Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        new RetrieveMyNEU().execute();
-                    }
-                });
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     private void storeTokens(String code) {
         log("CODE: " + code);
         try {
@@ -513,7 +170,6 @@ public class MainActivity extends ActionBarActivity {
             e.printStackTrace();
         }
     }
-
 
     private String makeRequest(String uri, JSONObject parent) {
         try {
@@ -780,6 +436,269 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
+    private enum balanceType {
+        H, L, M, P
+    }
+
+    private class RetrieveTokens extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String[] code) {
+            JSONObject parent = new JSONObject();
+            try {
+                parent.put("code", code[0]);
+                parent.put("client", Config.NU_API_CLIENT_NAME);
+                parent.put("scope", Config.NU_API_SCOPE);
+                parent.put("redirect_uri", Config.NU_API_REDIRECT_URI);
+                parent.put("grant_type", "authorization_code");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+
+            String uri = Config.SERVER_HOST + Config.NU_API_TOKEN_URI2;
+            log(uri);
+            return makeRequest(uri, parent);
+        }
+
+        @Override
+        protected void onPostExecute(String code) {
+            if (code == null) {
+                return;
+            }
+            storeTokens(code);
+        }
+    }
+
+    private class RefreshTokens extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String[] code) {
+            log("Refreshing Tokens....");
+            JSONObject parent = new JSONObject();
+            try {
+                parent.put("refresh_token", Config.REFRESH_TOKEN);
+                parent.put("client", Config.NU_API_CLIENT_NAME);
+                parent.put("scope", Config.NU_API_SCOPE);
+                parent.put("grant_type", "refresh_token");
+            } catch (JSONException ignored) {
+
+            }
+
+
+            String uri = Config.SERVER_HOST + Config.NU_API_TOKEN_URI2;
+            log(uri);
+            return makeRequest(uri, parent);
+
+        }
+
+        @Override
+        protected void onPostExecute(String code) {
+            if (code == null) {
+                return;
+            }
+            storeTokens(code);
+        }
+    }
+
+    private class RetrieveMyNEU extends AsyncTask<String, Void, String> {
+
+
+        @Override
+        protected String doInBackground(String[] code) {
+
+
+            String uri = Config.SERVER_HOST + Config.NU_API_MYNEUDATA_URL;
+            log(uri);
+            URL url = null;
+            try {
+                url = new URL(uri);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            try {
+                HttpsURLConnection con = (HttpsURLConnection) ((url != null) ? url.openConnection() : null);
+
+                //add request header
+                assert con != null;
+                con.setRequestMethod("GET");
+                con.setRequestProperty("User-Agent", USER_AGENT);
+                con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+                con.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+                con.setRequestProperty("Authorization", "Bearer " + Config.NU_TOKEN);
+
+                final String responseString = con.getResponseMessage();
+                final int responseCode = con.getResponseCode();
+                log("NEU Response code: " + responseCode);
+                if (responseCode > 200) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Retrieve ERROR" + responseCode + ": " + responseString, Toast.LENGTH_LONG).show();
+                            new RefreshTokens().execute();
+                        }
+                    });
+                    return null;
+
+                }
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(con.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+                return response.toString();
+            } catch (FileNotFoundException e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // new RefreshTokens().execute();
+                    }
+                });
+                return null;
+            } catch (ProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String code) {
+            if (code == null) {
+                return;
+            }
+            try {
+                parseData(code);
+//                final String info = code;
+//                final JSONObject mainObject = new JSONObject(code);
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        StringBuilder s = new StringBuilder();
+//                        TextView text = (TextView) findViewById(R.id.name);
+//                        Iterator<?> keys = mainObject.keys();
+//                        while (keys.hasNext())
+//                        {
+//                            String key = (String) keys.next();
+//                            try {
+//                                if ( mainObject.get(key) instanceof JSONObject ) {
+//                                    s.append(key + ": " + mainObject.get(key).toString() + "\n\n");
+//                                }
+//                            } catch (JSONException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                        text.setText(info);
+//                    }
+//                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private class RetrieveMyNEUConfig extends AsyncTask<String, Void, String> {
+
+
+        @Override
+        protected String doInBackground(String[] code) {
+
+            String uuid = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+            String uri = Config.SERVER_HOST + Config.MYNEU_CONFIG_URL +
+                    "?myConfigVersion=0" +
+                    "&appName=myneu" +
+                    "&appversion=v0.8.907a" +
+                    "&deviceId=" + uuid;
+            log(uri);
+            URL url = null;
+            try {
+                url = new URL(uri);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            try {
+                HttpsURLConnection con = (HttpsURLConnection) ((url != null) ? url.openConnection() : null);
+
+                //add request header
+                assert con != null;
+                con.setRequestMethod("GET");
+                con.setRequestProperty("User-Agent", USER_AGENT);
+                con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+                con.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+                con.setRequestProperty("Authorization", "Bearer " + Config.NU_TOKEN);
+
+                final String responseString = con.getResponseMessage();
+                final int responseCode = con.getResponseCode();
+                log("NEU Config Response code: " + responseCode);
+                if (responseCode > 200) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Retrieve ERROR" + responseCode + ": " + responseString, Toast.LENGTH_LONG).show();
+                            // new RefreshTokens().execute();
+                        }
+                    });
+                    return null;
+
+                }
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(con.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+                return response.toString();
+            } catch (FileNotFoundException e) {
+                log("ERROR GETTING NEU CONFIG");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // new RefreshTokens().execute();
+                    }
+                });
+                return null;
+            } catch (ProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String code) {
+            if (code == null) {
+                return;
+            }
+            try {
+                Config.NU_API_MYNEUDATA_URL = new JSONObject(code).getString("NU_API_MYNEUDATA_URL") + '/' + Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        new RetrieveMyNEU().execute();
+                    }
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } finally {
+                if (Config.NU_TOKEN.isEmpty() || Config.REFRESH_TOKEN.isEmpty()) {
+                    showLogin();
+                } else {
+                    new RetrieveMyNEU().execute();
+                }
+            }
+        }
+    }
+
 
 // --Commented out by Inspection START (12/2/2015 10:54 AM):
 //    private void log(int responseCode) {
@@ -787,10 +706,88 @@ public class MainActivity extends ActionBarActivity {
 //    }
 // --Commented out by Inspection STOP (12/2/2015 10:54 AM)
 
+    private class RetrieveClassInfo extends AsyncTask<String, Void, String> {
 
-    private static void log(String msg) {
-        String tag = "NEU";
-        Log.i(tag, msg);
+
+        @Override
+        protected String doInBackground(String[] code) {
+
+            String uri = "http://coursepro.io/listSections";
+            log(uri);
+            URL url = null;
+            try {
+                url = new URL(uri);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            try {
+                HttpURLConnection con = (HttpURLConnection) ((url != null) ? url.openConnection() : null);
+
+                //add request header
+                con.setRequestMethod("GET");
+                con.setRequestProperty("User-Agent", USER_AGENT);
+                con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+                con.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+
+                final String responseString = con.getResponseMessage();
+                final int responseCode = con.getResponseCode();
+                log("CoursePro Response code: " + responseCode);
+                if (responseCode > 200) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "CoursePro ERROR" + responseCode + ": " + responseString, Toast.LENGTH_LONG).show();
+                            // new RefreshTokens().execute();
+                        }
+                    });
+                    return null;
+
+                }
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(con.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+                return response.toString();
+            } catch (FileNotFoundException e) {
+                log("ERROR GETTING NEU CONFIG");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // new RefreshTokens().execute();
+                    }
+                });
+                return null;
+            } catch (ProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String code) {
+            if (code == null) {
+                return;
+            }
+            try {
+                Config.NU_API_MYNEUDATA_URL = new JSONObject(code).getString("NU_API_MYNEUDATA_URL") + '/' + Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        new RetrieveMyNEU().execute();
+                    }
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }

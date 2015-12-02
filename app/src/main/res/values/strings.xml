@@ -14,12 +14,10 @@
     <string name="view_schedule">View Schedule</string>
 
 
-
-
     <string name="monthTitleFont">roboto_condensed_bold</string>
     <string name="dayOfWeekFont">roboto_condensed_bold</string>
     <string name="dayOfMonthFont">roboto_regular</string>
     <string name="currentDayOfMonthFont">roboto_condensed_bold</string>
-<!-- TODO: Remove or change this placeholder text -->
+    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
