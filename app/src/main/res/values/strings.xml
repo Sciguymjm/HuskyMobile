@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">HuskyMobile</string>
+
+    <string name="action_settings">Logout</string>
+    <string name="refresh_tokens">Refresh Tokens</string>
+    <string name="balance_title">Balances</string>
+    <string name="advisor_title">Advisors</string>
+    <string name="grades_title">Grades</string>
+    <string name="holds_title">Holds</string>
+    <string name="schedule_title">Schedule</string>
+
+    <string name="loading">Loading...</string>
+    <string name="title_activity_schedule">Schedule</string>
+    <string name="view_schedule">View Schedule</string>
+
+
+
+
+    <string name="monthTitleFont">roboto_condensed_bold</string>
+    <string name="dayOfWeekFont">roboto_condensed_bold</string>
+    <string name="dayOfMonthFont">roboto_regular</string>
+    <string name="currentDayOfMonthFont">roboto_condensed_bold</string>
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

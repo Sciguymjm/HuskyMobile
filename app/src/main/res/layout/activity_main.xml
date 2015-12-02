@@ -1,0 +1,414 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingTop="@dimen/activity_vertical_margin"
+                android:paddingBottom="@dimen/activity_vertical_margin"
+                tools:context=".MainActivity">
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/scrollView">
+
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="visible">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/name"
+                    style="@style/Base.TextAppearance.AppCompat.Title"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/loading"/>
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="@string/loading"
+                    android:id="@+id/last_updated"
+                    style="@style/Base.TextAppearance.AppCompat.Caption"
+                    android:layout_gravity="center_horizontal"/>
+
+            <TextView
+                    style="@style/Base.TextAppearance.AppCompat.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/emergency"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/loading"
+                    android:visibility="gone"/>
+
+            <android.support.v7.widget.CardView
+                    android:id="@+id/holds_card"
+                    android:layout_gravity="center"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:padding="25dp"
+                    android:paddingLeft="25dp"
+                    android:paddingTop="25dp"
+                    android:paddingRight="25dp"
+                    android:paddingBottom="25dp"
+                    card_view:cardCornerRadius="2dp"
+                    android:layout_marginTop="10dp"
+                    android:visibility="gone">
+
+                <FrameLayout
+                        android:paddingLeft="20dp"
+                        android:paddingRight="@dimen/activity_horizontal_margin"
+                        android:paddingTop="20dp"
+                        android:paddingBottom="@dimen/activity_vertical_margin"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                    <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                        <TextView
+                                android:id="@+id/holds_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:text="@string/holds_title"
+                                style="@style/Base.TextAppearance.AppCompat.Large"
+                                android:layout_marginBottom="10dp"/>
+
+                        <TextView
+                                android:id="@+id/holds"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                style="@style/Base.TextAppearance.AppCompat.Medium"
+                                android:text="@string/loading"/>
+                    </LinearLayout>
+                </FrameLayout>
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                    android:id="@+id/balances_card"
+                    android:layout_gravity="center"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:padding="25dp"
+                    android:paddingLeft="25dp"
+                    android:paddingTop="25dp"
+                    android:paddingRight="25dp"
+                    android:paddingBottom="25dp"
+                    card_view:cardCornerRadius="2dp"
+                    android:layout_marginTop="10dp">
+
+                <FrameLayout
+                        android:paddingLeft="20dp"
+                        android:paddingRight="@dimen/activity_horizontal_margin"
+                        android:paddingTop="20dp"
+                        android:paddingBottom="@dimen/activity_vertical_margin"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                    <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                        <TextView
+                                android:id="@+id/balance_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:text="@string/balance_title"
+                                style="@style/Base.TextAppearance.AppCompat.Large"
+                                android:layout_marginBottom="10dp"/>
+
+                        <TableLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:stretchColumns="1">
+
+                            <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:id="@+id/husky">
+
+                                <TextView
+                                        android:id="@+id/huskyTitle"
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"
+                                        style="@style/Base.TextAppearance.AppCompat.Body1"
+                                        android:text="@string/loading"
+                                        android:layout_weight="1"
+                                        android:textStyle="bold"/>
+
+                                <TextView
+                                        style="@style/Base.TextAppearance.AppCompat.Body1"
+                                        android:id="@+id/huskyBalance"
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"
+                                        android:text="@string/loading"
+                                        android:layout_weight="1"/>
+                            </TableRow>
+
+                            <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:id="@+id/laundry">
+
+                                <TextView
+                                        style="@style/Base.TextAppearance.AppCompat.Body1"
+                                        android:id="@+id/laundryTitle"
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"
+                                        android:text="@string/loading"
+                                        android:layout_weight="1"
+                                        android:textStyle="bold"/>
+
+                                <TextView
+                                        style="@style/Base.TextAppearance.AppCompat.Body1"
+                                        android:id="@+id/laundryBalance"
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"
+                                        android:text="@string/loading"
+                                        android:layout_weight="1"/>
+                            </TableRow>
+
+                            <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:id="@+id/meal1">
+
+                                <TextView
+                                        style="@style/Base.TextAppearance.AppCompat.Body1"
+                                        android:id="@+id/meal1Title"
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"
+                                        android:text="@string/loading"
+                                        android:layout_weight="1"
+                                        android:textStyle="bold"/>
+
+                                <TextView
+                                        style="@style/Base.TextAppearance.AppCompat.Body1"
+                                        android:id="@+id/meal1Balance"
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"
+                                        android:text="@string/loading"
+                                        android:layout_weight="1"/>
+                            </TableRow>
+
+                            <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:id="@+id/meal2">
+
+                                <TextView
+                                        style="@style/Base.TextAppearance.AppCompat.Body1"
+                                        android:id="@+id/meal2Title"
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"
+                                        android:text="@string/loading"
+                                        android:layout_weight="1"
+                                        android:textStyle="bold"/>
+
+                                <TextView
+                                        style="@style/Base.TextAppearance.AppCompat.Body1"
+                                        android:id="@+id/meal2Balance"
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"
+                                        android:text="@string/loading"
+                                        android:layout_weight="1"/>
+                            </TableRow>
+
+                            <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:id="@+id/print">
+
+                                <TextView
+                                        style="@style/Base.TextAppearance.AppCompat.Body1"
+                                        android:id="@+id/printTitle"
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"
+                                        android:text="@string/loading"
+                                        android:layout_weight="1"
+                                        android:textStyle="bold"/>
+
+                                <TextView
+                                        style="@style/Base.TextAppearance.AppCompat.Body1"
+                                        android:id="@+id/printBalance"
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"
+                                        android:text="@string/loading"
+                                        android:layout_weight="1"/>
+                            </TableRow>
+                        </TableLayout>
+
+                    </LinearLayout>
+                </FrameLayout>
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                    android:id="@+id/advisors_card"
+                    android:layout_gravity="center"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:padding="25dp"
+                    android:paddingLeft="25dp"
+                    android:paddingTop="25dp"
+                    android:paddingRight="25dp"
+                    android:paddingBottom="25dp"
+                    card_view:cardCornerRadius="2dp"
+                    android:layout_marginTop="10dp">
+
+                <FrameLayout
+                        android:paddingLeft="20dp"
+                        android:paddingRight="@dimen/activity_horizontal_margin"
+                        android:paddingTop="20dp"
+                        android:paddingBottom="@dimen/activity_vertical_margin"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                    <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                        <TextView
+                                android:id="@+id/advisor_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:text="@string/advisor_title"
+                                style="@style/Base.TextAppearance.AppCompat.Large"
+                                android:layout_marginBottom="10dp"/>
+
+                        <TextView
+                                android:id="@+id/advisors"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:autoLink="all"
+                                style="@style/TextAppearance.AppCompat.Body1"
+                                android:text="@string/loading"/>
+                    </LinearLayout>
+                </FrameLayout>
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                    android:id="@+id/schedule_card"
+                    android:layout_gravity="center"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:padding="25dp"
+                    android:paddingLeft="25dp"
+                    android:paddingTop="25dp"
+                    android:paddingRight="25dp"
+                    android:paddingBottom="25dp"
+                    card_view:cardCornerRadius="2dp"
+                    android:layout_marginTop="10dp">
+
+                <FrameLayout
+                        android:paddingLeft="20dp"
+                        android:paddingRight="@dimen/activity_horizontal_margin"
+                        android:paddingTop="20dp"
+                        android:paddingBottom="@dimen/activity_vertical_margin"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                    <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                        <TextView
+                                android:id="@+id/schedule_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:text="@string/schedule_title"
+                                style="@style/Base.TextAppearance.AppCompat.Large"
+                                android:layout_marginBottom="10dp"/>
+
+                        <TextView
+                                android:id="@+id/schedule"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                style="@style/TextAppearance.AppCompat.Body1"
+                                android:text="@string/loading"/>
+                    </LinearLayout>
+                </FrameLayout>
+            </android.support.v7.widget.CardView>
+
+
+            <android.support.v7.widget.CardView
+                    android:id="@+id/grades_card"
+                    android:layout_gravity="center"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:padding="25dp"
+                    android:paddingLeft="25dp"
+                    android:paddingTop="25dp"
+                    android:paddingRight="25dp"
+                    android:paddingBottom="25dp"
+                    card_view:cardCornerRadius="2dp"
+                    android:layout_marginTop="10dp">
+
+                <FrameLayout
+                        android:paddingLeft="20dp"
+                        android:paddingRight="@dimen/activity_horizontal_margin"
+                        android:paddingTop="20dp"
+                        android:paddingBottom="@dimen/activity_vertical_margin"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                    <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                        <TextView
+                                android:id="@+id/grades_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:text="@string/grades_title"
+                                style="@style/Base.TextAppearance.AppCompat.Large"
+                                android:layout_marginBottom="10dp"/>
+
+                        <TextView
+                                android:id="@+id/grades"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:autoLink="all"
+                                style="@style/Base.TextAppearance.AppCompat.Medium"
+                                android:text="@string/loading"/>
+                    </LinearLayout>
+                </FrameLayout>
+            </android.support.v7.widget.CardView>
+
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/view_schedule"
+            android:id="@+id/viewSchedule"
+            android:layout_alignBottom="@+id/scrollView"
+            android:layout_centerHorizontal="true"
+            android:visibility="gone"/>
+
+    <WebView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:id="@+id/loginWeb"
+            android:visibility="gone"/>
+
+</RelativeLayout>
